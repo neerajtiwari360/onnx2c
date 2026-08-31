@@ -42,13 +42,16 @@ add_library(onnx2c_lib STATIC
 	src/nodes/instancenorm.cc
 	src/nodes/lstm.cc
 	src/nodes/pad.cc
+	src/nodes/reduce.cc
 	src/nodes/scatternd.cc
+	src/nodes/treeensembleclassifier.cc
 )
 target_compile_options(onnx2c_lib
 	PUBLIC
 		-I${CMAKE_CURRENT_BINARY_DIR}
 	PRIVATE
 		-I${CMAKE_CURRENT_SOURCE_DIR}/aixlog/include
+		-I${CMAKE_CURRENT_SOURCE_DIR}/cmake_timestamp
 		-Isrc
 		-Wall
 	)

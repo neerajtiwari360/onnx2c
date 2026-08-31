@@ -87,7 +87,9 @@ Onnx2c has a few optimization passes that modify the generated output:
  - Tensor unionization to wrap intermediate tensors in unions to help the compiler re-use the heap memory.
  - Removing `Cast` nodes, by modifying their predecessor node's output tensor.
  - Optimization for AVR processors to put constants into instruction memory.
- - An [experimental quantization option](quantization.md) to convert floating point calculation to integers.
+
+Floating-point output precision can be configured with `--precision N`.
+If omitted, onnx2c uses a precision of `20`.
 
 `./onnx2c -h` prints out all available command line options.
 
@@ -123,7 +125,7 @@ running STM32Cube HAL with a clock speed of 84 or 96MHz. With same project and
 optimization settings (gcc -O4), measuring inference time by toggling GPIO pins,
 the STMCubeAI-generated version ran at 490us, while the onnx2c one took 20us.
 
-See Notes below for a description of the RAM optmimized version.
+See Notes below for a description of the RAM optimized version.
 
 Memory consumption was about similar:
 | platform               |text      |  data  |  bss | runtime |
@@ -145,7 +147,7 @@ The STM32L4 used by Hymel is a low-power version of the STM32F4, so the L4
 certainly should not be faster than the F4. Same versions of CubeAI were used.
 The only difference was that Hymel fed the TFL model to CubeAI, not the ONNX model
 as in the above measurement. I am not sure if this is relevant, but so far
-it is the only think I can think of that could explain the difference.
+it is the only thing I can think of that could explain the difference.
 Also the measured ONNX model was not converted from the TFL model that Hymel used,
 but re-trained using the tutorial. But this most likely is not the cause for the
 execution speed difference.
@@ -164,3 +166,20 @@ slower than RAM.
 
 Disabling of this optimisation should be added as a command-line option to onnx2c.
 
+### 16 bit Floating Point Support
+
+onnx2c supports the ONNX `float16` and `bfloat16` data types. `float16` is the
+IEEE half-precision floating point format with 1 sign bit, 5 exponent bits and
+10 mantissa bits. `bfloat16` is the Brain Floating Point format with 1 sign bit,
+8 exponent bits and 7 mantissa bits.
+See [Wikipedia](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) for
+more details.
+
+They are mapped to the `_Float16` and `__bf16` C types respectively. While these
+types are not part of the C standard, both GCC and Clang support them depending on
+the target architecture:
+
+- [GCC Documentation](https://gcc.gnu.org/onlinedocs/gcc/Half-Precision.html)
+- [Clang Documentation](https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point)
+
+If your model does not use these types, onnx2c will not generate any code using them.
